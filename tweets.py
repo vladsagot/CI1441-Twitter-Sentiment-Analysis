@@ -1,13 +1,13 @@
-import random
-
-import pandas as pd
-import numpy as np
-import re
+import matplotlib.pyplot as plt
 import nltk
-import tensorflow as tf
+import numpy as np
+import pandas as pd
+import random
+import re
 import seaborn as sns
-from nltk.corpus import stopwords
+import tensorflow as tf
 
+from nltk.corpus import stopwords
 from numpy import array
 from keras.preprocessing.text import one_hot
 from keras.preprocessing.sequence import pad_sequences
@@ -18,8 +18,6 @@ from keras.layers import GlobalMaxPooling1D
 from keras.layers.embeddings import Embedding
 from sklearn.model_selection import train_test_split
 from keras.preprocessing.text import Tokenizer
-
-import matplotlib.pyplot as plt
 
 
 def preprocess_text(sen):
@@ -62,7 +60,11 @@ sentences = list(tweet_reviews['tweet'])
 for sen in sentences:
     X.append(preprocess_text(sen))
 
+# Transform positive sentiment to '1' and negative to '0'
+
 y = tweet_reviews['class']
 y = np.array(list(map(lambda x: 1 if x == "pos" else 0, y)))
+
+# Create train and test data in a random order
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=42)
