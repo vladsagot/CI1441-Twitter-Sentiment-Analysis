@@ -1,3 +1,5 @@
+import random
+
 import pandas as pd
 import numpy as np
 import re
@@ -22,10 +24,19 @@ import matplotlib.pyplot as plt
 
 def preprocess_text(sen):
     # Removing html tags
-    sentence = remove_tags(sen)
+    sentence = sen
+
+    # Transform to lowercase
+    sentence = sentence.lower()
+
+    # Removing URLs
+    sentence = re.sub(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', ' ', sentence)
+
+    # Removing username mentions "@"
+    sentence = re.sub(r'@[a-zA-Z0-9_]*', ' ', sentence)
 
     # Remove punctuations and numbers
-    sentence = re.sub('[^a-zA-Z]', ' ', sentence)
+    sentence = re.sub('[^a-zA-Záéíóúñ]', ' ', sentence)
 
     # Single character removal
     sentence = re.sub(r"\s+[a-zA-Z]\s+", ' ', sentence)
@@ -33,16 +44,7 @@ def preprocess_text(sen):
     # Removing multiple spaces
     sentence = re.sub(r'\s+', ' ', sentence)
 
-    #Removing
-
     return sentence
-
-
-TAG_RE = re.compile(r'<[^>]+>')
-
-
-def remove_tags(text):
-    return TAG_RE.sub('', text)
 
 
 tweet_reviews = pd.read_csv("/home/vladimir/Desktop/dataset.csv")
@@ -53,8 +55,14 @@ tweet_reviews = pd.read_csv("/home/vladimir/Desktop/dataset.csv")
 
 # plt.show()
 
-var = preprocess_text(tweet_reviews["tweet"][1])
+# Clean dataset of tweets
 
-print(tweet_reviews["tweet"][1])
-print(var)
+X = []
+sentences = list(tweet_reviews['tweet'])
+for sen in sentences:
+    X.append(preprocess_text(sen))
 
+y = tweet_reviews['class']
+y = np.array(list(map(lambda x: 1 if x == "pos" else 0, y)))
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=42)
