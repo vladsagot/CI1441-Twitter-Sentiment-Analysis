@@ -18,14 +18,14 @@ from keras.layers import GlobalMaxPooling1D
 from keras.layers.embeddings import Embedding
 from sklearn.model_selection import train_test_split
 from keras.preprocessing.text import Tokenizer
+from numpy import array
+from numpy import asarray
+from numpy import zeros
 
 
 def preprocess_text(sen):
-    # Removing html tags
-    sentence = sen
-
     # Transform to lowercase
-    sentence = sentence.lower()
+    sentence = sen.lower()
 
     # Removing URLs
     sentence = re.sub(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', ' ', sentence)
@@ -45,26 +45,74 @@ def preprocess_text(sen):
     return sentence
 
 
+# -------------------------
+# Load and sanitize data
+# -------------------------
+
+# Load the tweets dataset
 tweet_reviews = pd.read_csv("/home/vladimir/Desktop/dataset.csv")
 
-# print(tweet_reviews)
-
-# sns.countplot(x='class', data=tweet_reviews)
-
-# plt.show()
-
 # Clean dataset of tweets
-
 X = []
 sentences = list(tweet_reviews['tweet'])
 for sen in sentences:
     X.append(preprocess_text(sen))
 
 # Transform positive sentiment to '1' and negative to '0'
-
 y = tweet_reviews['class']
 y = np.array(list(map(lambda x: 1 if x == "pos" else 0, y)))
 
 # Create train and test data in a random order
-
+# For this case 80% of data is for training and 20% for testing
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=42)
+
+# -------------------------
+# Embedding layer
+# -------------------------
+# Transform textual data into numeric data for the first layer in the deep learning models in Keras
+
+# Vectorize a text corpus, by turning each text into either a sequence of integer
+
+# Create a word-to-index dictionary
+# The most common words will be kept
+tokenizer = Tokenizer(num_words=10000)
+
+# Updates internal vocabulary based on a list of texts. This method creates the vocabulary index based on word
+# frequency. So if you give it something like, "The cat sat on the mat." It will create a dictionary s.t. word_index[
+# "the"] = 1; word_index["cat"] = 2 it is word -> index dictionary so every word gets a unique integer value.
+# https://stackoverflow.com/questions/51956000/what-does-keras-tokenizer-method-exactly-do
+tokenizer.fit_on_texts(X_train)
+
+# Transforms each text in texts to a sequence of integers. So it basically takes each word in the text and replaces
+# it with its corresponding integer value from the word_index dictionary.
+X_train = tokenizer.texts_to_sequences(X_train)
+X_test = tokenizer.texts_to_sequences(X_test)
+
+# Adding 1 because of reserved 0 index
+vocab_size = len(tokenizer.word_index) + 1
+
+# Tweet old size of characters
+maxlen = 140
+
+# pad_sequences is used to ensure that all sequences in a list have the same length
+# padding: String, 'pre' or 'post': pad either before or after each sequence
+# https://stackoverflow.com/questions/42943291/what-does-keras-io-preprocessing-sequence-pad-sequences-do
+X_train = pad_sequences(X_train, padding='post', maxlen=maxlen)
+X_test = pad_sequences(X_test, padding='post', maxlen=maxlen)
+
+# In word embeddings, every word is represented as an n-dimensional dense vector. The words that are similar will
+# have similar vector. https://stackabuse.com/python-for-nlp-word-embeddings-for-deep-learning-in-keras/
+#
+# Data source in Spanish: https://github.com/dccuchile/spanish-word-embeddings#glove-embeddings-from-sbwc
+# Algorithm: Implementation: GloVe
+# Parameters: vector-size = 300, iter = 25, min-count = 5, all other parameters set as default
+embeddings_dictionary = dict()
+glove_file = open('/home/vladimir/Downloads/Compressed/glove-sbwc.i25.vec', encoding="utf8")
+
+for line in glove_file:
+    # splits a string into a list
+    records = line.split()
+    word = records[0]
+    vector_dimensions = asarray(records[1:], dtype='float32')
+    embeddings_dictionary[word] = vector_dimensions
+glove_file.close()
