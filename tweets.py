@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import nltk
 import numpy as np
 import pandas as pd
+import pickle
 import random
 import re
 import seaborn as sns
@@ -49,6 +50,8 @@ def preprocess_text(sen):
 # Load and sanitize data
 # -------------------------
 
+print("Load tweets...")
+
 # Load the tweets dataset
 tweet_reviews = pd.read_csv("/home/vladimir/Desktop/dataset.csv")
 
@@ -61,6 +64,8 @@ for sen in sentences:
 # Transform positive sentiment to '1' and negative to '0'
 y = tweet_reviews['class']
 y = np.array(list(map(lambda x: 1 if x == "pos" else 0, y)))
+
+print("Creating train and test data...")
 
 # Create train and test data in a random order
 # For this case 80% of data is for training and 20% for testing
@@ -100,6 +105,8 @@ maxlen = 140
 X_train = pad_sequences(X_train, padding='post', maxlen=maxlen)
 X_test = pad_sequences(X_test, padding='post', maxlen=maxlen)
 
+print("Load GloVe spanish file...")
+
 # In word embeddings, every word is represented as an n-dimensional dense vector. The words that are similar will
 # have similar vector. https://stackabuse.com/python-for-nlp-word-embeddings-for-deep-learning-in-keras/
 #
@@ -112,7 +119,30 @@ glove_file = open('/home/vladimir/Downloads/Compressed/glove-sbwc.i25.vec', enco
 for line in glove_file:
     # splits a string into a list
     records = line.split()
+    # the word is in position 0
     word = records[0]
+    # get n-dimensions of array
     vector_dimensions = asarray(records[1:], dtype='float32')
     embeddings_dictionary[word] = vector_dimensions
 glove_file.close()
+
+# Save embeddings_dictionary into a file
+file = open('embeddings_dictionary.obj', 'wb')
+pickle.dump(embeddings_dictionary, file)
+file.close()
+
+print("Creating embedding matrix...")
+
+# Creates an embedding matrix where each row number will correspond to the index of the word in the corpus
+# The matrix will have 300 columns where each column will contain the GloVe word embeddings for the words in our corpus
+# Create a matrix with zeros
+embedding_matrix = zeros((vocab_size, 300))
+for word, index in tokenizer.word_index.items():
+    embedding_vector = embeddings_dictionary.get(word)
+    if embedding_vector is not None:
+        embedding_matrix[index] = embedding_vector
+
+# Save embedding_matrix into a file
+file = open('embedding_matrix.obj', 'wb')
+pickle.dump(embedding_matrix, file)
+file.close()
