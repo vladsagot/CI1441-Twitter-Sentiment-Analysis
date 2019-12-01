@@ -9,6 +9,7 @@ import seaborn as sns
 import tensorflow as tf
 
 import os
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 from nltk.corpus import stopwords
@@ -17,7 +18,7 @@ from keras.preprocessing.text import one_hot
 from keras.preprocessing.sequence import pad_sequences
 from keras.models import Sequential
 from keras.layers.core import Activation, Dropout, Dense
-from keras.layers import Flatten
+from keras.layers import Flatten, Conv1D
 from keras.layers import GlobalMaxPooling1D
 from keras.layers.embeddings import Embedding
 from sklearn.model_selection import train_test_split
@@ -125,26 +126,16 @@ file.close()
 # Text Classification with Simple Neural Network
 # --------------------------------------------------
 
-print("Classification with Simple Neural Network...")
+print("Classification with Convolutional Neural Network...")
 
-# The Sequential model is a linear stack of layers
-# The sequential API allows you to create models layer-by-layer for most problems
 model = Sequential()
 
-# keras.layers.Embedding(input_dim, output_dim, embeddings_initializer='uniform', embeddings_regularizer=None,
-# activity_regularizer=None, embeddings_constraint=None, mask_zero=False, input_length=None)
-# Since we are not training our own embeddings and using the GloVe embedding, we set trainable to False
 embedding_layer = Embedding(vocab_size, 300, weights=[embedding_matrix], input_length=maxlen, trainable=False)
 model.add(embedding_layer)
 
-# The embedding layer is then added to our model. Next, since we are directly connecting our embedding layer to
-# densely connected layer, we flatten the embedding layer. Finally, we add a dense layer with sigmoid activation
-# function.
-model.add(Flatten())
+model.add(Conv1D(300, 5, activation='relu'))
+model.add(GlobalMaxPooling1D())
 model.add(Dense(1, activation='sigmoid'))
-
-# To compile our model, we will use the adam optimizer, binary_crossentropy as our loss function and accuracy as
-# metrics and then we will print the summary of our model
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['acc'])
 
 print(model.summary())
@@ -156,7 +147,7 @@ print("Training neural network...")
 # batch_size: Integer or None. Number of samples per gradient update
 # verbose: Integer. 0, 1, or 2. Verbosity mode. 0 = silent, 1 = progress bar, 2 = one line per epoch
 # validation_split: Float between 0 and 1. Fraction of the training data to be used as validation data
-history = model.fit(X_train, y_train, batch_size=128, epochs=8, verbose=1, validation_split=0.2)
+history = model.fit(X_train, y_train, batch_size=128, epochs=6, verbose=1, validation_split=0.2)
 
 score = model.evaluate(X_test, y_test, verbose=1)
 
