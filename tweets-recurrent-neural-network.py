@@ -18,7 +18,7 @@ from keras.preprocessing.text import one_hot
 from keras.preprocessing.sequence import pad_sequences
 from keras.models import Sequential
 from keras.layers.core import Activation, Dropout, Dense
-from keras.layers import Flatten, Conv1D
+from keras.layers import Flatten, Conv1D, LSTM
 from keras.layers import GlobalMaxPooling1D
 from keras.layers.embeddings import Embedding
 from sklearn.model_selection import train_test_split
@@ -126,15 +126,13 @@ file.close()
 # Text Classification with Simple Neural Network
 # --------------------------------------------------
 
-print("Classification with Convolutional Neural Network...")
+print("Classification with Recurrent Neural Network (LSTM)...")
 
 model = Sequential()
-
 embedding_layer = Embedding(vocab_size, 300, weights=[embedding_matrix], input_length=maxlen, trainable=False)
 model.add(embedding_layer)
+model.add(LSTM(128))
 
-model.add(Conv1D(128, 5, activation='relu'))
-model.add(GlobalMaxPooling1D())
 model.add(Dense(1, activation='sigmoid'))
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['acc'])
 
@@ -169,7 +167,7 @@ plt.plot(history.history['val_acc'])
 plt.title('model accuracy')
 plt.ylabel('accuracy')
 plt.xlabel('epoch')
-plt.legend(['train', 'test'], loc='upper left')
+plt.legend(['train','test'], loc='upper left')
 plt.show()
 
 plt.plot(history.history['loss'])
@@ -178,5 +176,5 @@ plt.plot(history.history['val_loss'])
 plt.title('model loss')
 plt.ylabel('loss')
 plt.xlabel('epoch')
-plt.legend(['train', 'test'], loc='upper left')
+plt.legend(['train','test'], loc='upper left')
 plt.show()

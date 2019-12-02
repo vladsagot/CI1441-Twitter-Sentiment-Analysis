@@ -156,6 +156,15 @@ print("Training neural network...")
 # batch_size: Integer or None. Number of samples per gradient update
 # verbose: Integer. 0, 1, or 2. Verbosity mode. 0 = silent, 1 = progress bar, 2 = one line per epoch
 # validation_split: Float between 0 and 1. Fraction of the training data to be used as validation data
+#
+# The batch size defines the number of samples that will be propagated through the network.
+#
+# For instance, let's say you have 1050 training samples and you want to set up a batch_size equal to 100. The
+# algorithm takes the first 100 samples (from 1st to 100th) from the training dataset and trains the network. Next,
+# it takes the second 100 samples (from 101st to 200th) and trains the network again. We can keep doing this
+# procedure until we have propagated all samples through of the network.
+# https://stats.stackexchange.com/questions/153531/what-is-batch-size-in-neural-network
+
 history = model.fit(X_train, y_train, batch_size=128, epochs=8, verbose=1, validation_split=0.2)
 
 score = model.evaluate(X_test, y_test, verbose=1)
