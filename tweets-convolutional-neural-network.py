@@ -18,7 +18,7 @@ from keras.preprocessing.text import one_hot
 from keras.preprocessing.sequence import pad_sequences
 from keras.models import Sequential
 from keras.layers.core import Activation, Dropout, Dense
-from keras.layers import Flatten, Conv1D
+from keras.layers import Flatten, Conv1D, LSTM
 from keras.layers import GlobalMaxPooling1D
 from keras.layers.embeddings import Embedding
 from sklearn.model_selection import train_test_split
@@ -52,7 +52,7 @@ def preprocess_text(sen):
 
 # Define variables
 # vocab_size = len(tokenizer.word_index) + 1
-vocab_size = 17383
+# vocab_size = 17383
 # Tweet old size of characters
 maxlen = 140
 
@@ -90,7 +90,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random
 
 # Create a word-to-index dictionary
 # The most common words will be kept
-tokenizer = Tokenizer(num_words=10000)
+tokenizer = Tokenizer(num_words=21000)
 
 # Updates internal vocabulary based on a list of texts. This method creates the vocabulary index based on word
 # frequency. So if you give it something like, "The cat sat on the mat." It will create a dictionary s.t. word_index[
@@ -132,9 +132,9 @@ model = Sequential()
 
 embedding_layer = Embedding(vocab_size, 300, weights=[embedding_matrix], input_length=maxlen, trainable=False)
 model.add(embedding_layer)
-
-model.add(Conv1D(128, 5, activation='relu'))
+model.add(Conv1D(128, 6, activation='exponential'))
 model.add(GlobalMaxPooling1D())
+model.add(Dense(128, activation='relu'))
 model.add(Dense(1, activation='sigmoid'))
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['acc'])
 

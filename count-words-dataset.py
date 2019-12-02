@@ -42,7 +42,8 @@ sentences = list(tweet_reviews['tweet'])
 for sen in sentences:
     X.append(preprocess_text(sen))
 
-print(X)
+# print(X)
+print(len(max(X, key=len)))
 
 all_words = []
 for sent in X:

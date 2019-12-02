@@ -51,7 +51,7 @@ def preprocess_text(sen):
 
 # Define variables
 # vocab_size = len(tokenizer.word_index) + 1
-vocab_size = 17383
+# vocab_size = 17383
 # Tweet old size of characters
 maxlen = 140
 
@@ -89,7 +89,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random
 
 # Create a word-to-index dictionary
 # The most common words will be kept
-tokenizer = Tokenizer(num_words=10000)
+tokenizer = Tokenizer(num_words=21000)
 
 # Updates internal vocabulary based on a list of texts. This method creates the vocabulary index based on word
 # frequency. So if you give it something like, "The cat sat on the mat." It will create a dictionary s.t. word_index[
